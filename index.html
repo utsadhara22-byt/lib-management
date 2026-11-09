@@ -1,0 +1,1752 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Athena Enterprise LMS - Comprehensive Library System</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            500: '#0284c7',
+                            600: '#0369a1',
+                            700: '#075985',
+                            800: '#0c4a6e',
+                            900: '#0f172a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+        .dark ::-webkit-scrollbar-thumb { background: #475569; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .animate-fade-in { animation: fadeIn 0.25s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 font-sans text-slate-800 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-200">
+
+    <!-- TOP HEADER -->
+    <header class="bg-slate-900 text-white shadow-lg sticky top-0 z-30 border-b border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16 gap-4">
+                <!-- Brand & Logo -->
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('dashboard')">
+                    <div class="bg-gradient-to-tr from-sky-600 to-cyan-400 p-2.5 rounded-xl text-white shadow-md">
+                        <i class="fa-solid fa-book-bookmark text-xl"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h1 class="text-xl font-extrabold tracking-tight text-white">Athena <span class="text-sky-400">LMS</span></h1>
+                            <span class="text-[10px] bg-sky-500/20 text-sky-300 border border-sky-500/30 font-semibold px-2 py-0.5 rounded-full">v2.5 Enterprise</span>
+                        </div>
+                        <p class="text-xs text-slate-400 hidden sm:block">Integrated Library Management & Intelligence</p>
+                    </div>
+                </div>
+
+                <!-- Search Shortcut & Controls -->
+                <div class="flex items-center space-x-3">
+                    <!-- Quick Global Search Input -->
+                    <div class="relative hidden lg:block w-72">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-sm"></i>
+                        <input type="text" id="global-search" oninput="handleGlobalSearch(this.value)" placeholder="Quick search books or members..." 
+                               class="w-full pl-9 pr-4 py-1.5 bg-slate-800 border border-slate-700 text-slate-200 placeholder-slate-400 text-xs rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 transition">
+                        <div id="global-search-results" class="hidden absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-50 max-h-80 overflow-y-auto p-2 text-xs"></div>
+                    </div>
+
+                    <!-- Dark Mode Toggle -->
+                    <button onclick="toggleDarkMode()" class="p-2 text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-lg transition border border-slate-700" title="Toggle Theme">
+                        <i id="theme-icon" class="fa-solid fa-moon"></i>
+                    </button>
+
+                    <!-- Reset Demo Data Button -->
+                    <button onclick="resetToSampleData()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white px-3 py-2 rounded-lg transition border border-slate-700 flex items-center gap-1.5">
+                        <i class="fa-solid fa-rotate-left text-sky-400"></i>
+                        <span class="hidden md:inline">Reset Demo</span>
+                    </button>
+
+                    <!-- Clock -->
+                    <div class="hidden xl:flex items-center space-x-2 text-xs text-slate-300 bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700">
+                        <i class="fa-regular fa-clock text-sky-400"></i>
+                        <span id="live-clock">--:--:--</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN APP CONTAINER -->
+    <div class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col md:flex-row gap-6">
+
+        <!-- NAVIGATION SIDEBAR -->
+        <aside class="w-full md:w-64 flex-shrink-0">
+            <nav class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/60 p-3 space-y-1 sticky top-22">
+                <div class="px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-slate-400">Core Modules</div>
+                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all bg-sky-50 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400">
+                    <i class="fa-solid fa-chart-pie text-base w-5 text-center"></i>
+                    <span>Dashboard</span>
+                </button>
+                <button onclick="switchTab('catalog')" id="nav-catalog" class="nav-btn w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all">
+                    <i class="fa-solid fa-books text-base w-5 text-center"></i>
+                    <span>Book Catalog</span>
+                </button>
+                <button onclick="switchTab('members')" id="nav-members" class="nav-btn w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all">
+                    <i class="fa-solid fa-users text-base w-5 text-center"></i>
+                    <span>Members Directory</span>
+                </button>
+                <button onclick="switchTab('circulation')" id="nav-circulation" class="nav-btn w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all">
+                    <i class="fa-solid fa-arrow-right-arrow-left text-base w-5 text-center"></i>
+                    <span>Issue & Return</span>
+                </button>
+                
+                <div class="pt-3 px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-slate-400">Analytics & Admin</div>
+                <button onclick="switchTab('history')" id="nav-history" class="nav-btn w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all">
+                    <i class="fa-solid fa-clock-rotate-left text-base w-5 text-center"></i>
+                    <span>Transaction Audit</span>
+                </button>
+                <button onclick="switchTab('reports')" id="nav-reports" class="nav-btn w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all">
+                    <i class="fa-solid fa-chart-line text-base w-5 text-center"></i>
+                    <span>Reports & Analytics</span>
+                </button>
+                <button onclick="switchTab('settings')" id="nav-settings" class="nav-btn w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all">
+                    <i class="fa-solid fa-sliders text-base w-5 text-center"></i>
+                    <span>System Settings</span>
+                </button>
+            </nav>
+        </aside>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="flex-1 min-w-0 space-y-6">
+
+            <!-- STATS TOP BAR -->
+            <div class="grid grid-cols-2 lg:grid-cols-5 gap-3">
+                <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/60 flex items-center">
+                    <div class="p-3 bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 rounded-xl mr-3">
+                        <i class="fa-solid fa-book text-lg"></i>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Titles</p>
+                        <h3 class="text-xl font-extrabold text-slate-900 dark:text-white" id="stat-total-books">0</h3>
+                    </div>
+                </div>
+                <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/60 flex items-center">
+                    <div class="p-3 bg-emerald-50 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 rounded-xl mr-3">
+                        <i class="fa-solid fa-book-open text-lg"></i>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Available Copies</p>
+                        <h3 class="text-xl font-extrabold text-slate-900 dark:text-white" id="stat-available-copies">0</h3>
+                    </div>
+                </div>
+                <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/60 flex items-center">
+                    <div class="p-3 bg-amber-50 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 rounded-xl mr-3">
+                        <i class="fa-solid fa-hand-holding-book text-lg"></i>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Active Loans</p>
+                        <h3 class="text-xl font-extrabold text-slate-900 dark:text-white" id="stat-issued-books">0</h3>
+                    </div>
+                </div>
+                <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/60 flex items-center">
+                    <div class="p-3 bg-purple-50 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400 rounded-xl mr-3">
+                        <i class="fa-solid fa-users text-lg"></i>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Active Members</p>
+                        <h3 class="text-xl font-extrabold text-slate-900 dark:text-white" id="stat-total-members">0</h3>
+                    </div>
+                </div>
+                <div class="col-span-2 lg:col-span-1 bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/60 flex items-center">
+                    <div class="p-3 bg-rose-50 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400 rounded-xl mr-3">
+                        <i class="fa-solid fa-coins text-lg"></i>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Fines Revenue</p>
+                        <h3 class="text-xl font-extrabold text-slate-900 dark:text-white" id="stat-total-fines">$0.00</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 1: DASHBOARD -->
+            <section id="section-dashboard" class="tab-content space-y-6">
+                <!-- Quick Action Buttons -->
+                <div class="bg-gradient-to-r from-slate-900 to-slate-800 text-white rounded-2xl p-5 shadow-sm border border-slate-800 flex flex-col md:flex-row items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-lg font-bold flex items-center gap-2">
+                            <i class="fa-solid fa-wand-magic-sparkles text-sky-400"></i> Quick Actions Center
+                        </h2>
+                        <p class="text-xs text-slate-400 mt-1">Perform key library circulation tasks in one click.</p>
+                    </div>
+                    <div class="flex flex-wrap gap-2.5 w-full md:w-auto">
+                        <button onclick="openBookModal()" class="flex-1 md:flex-none bg-sky-600 hover:bg-sky-500 text-white px-3.5 py-2 rounded-xl text-xs font-semibold transition flex items-center justify-center gap-1.5 shadow-sm">
+                            <i class="fa-solid fa-plus"></i> Add Book
+                        </button>
+                        <button onclick="openMemberModal()" class="flex-1 md:flex-none bg-indigo-600 hover:bg-indigo-500 text-white px-3.5 py-2 rounded-xl text-xs font-semibold transition flex items-center justify-center gap-1.5 shadow-sm">
+                            <i class="fa-solid fa-user-plus"></i> Add Member
+                        </button>
+                        <button onclick="switchTab('circulation')" class="flex-1 md:flex-none bg-emerald-600 hover:bg-emerald-500 text-white px-3.5 py-2 rounded-xl text-xs font-semibold transition flex items-center justify-center gap-1.5 shadow-sm">
+                            <i class="fa-solid fa-handshake"></i> Issue / Return
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Visual Charts Section -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/60">
+                        <h3 class="text-sm font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
+                            <i class="fa-solid fa-chart-column text-sky-500"></i> Monthly Borrowing Activity Trends
+                        </h3>
+                        <div class="h-64 relative">
+                            <canvas id="chart-borrowing-trends"></canvas>
+                        </div>
+                    </div>
+                    <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/60">
+                        <h3 class="text-sm font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
+                            <i class="fa-solid fa-chart-pie text-emerald-500"></i> Collection Distribution by Genre
+                        </h3>
+                        <div class="h-64 relative">
+                            <canvas id="chart-genre-distribution"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Overdue & Low Stock Grid -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Overdue Loans Panel -->
+                    <div class="lg:col-span-2 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/60 p-5">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-sm font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                                <i class="fa-solid fa-triangle-exclamation text-amber-500"></i> Overdue Items & Warnings
+                            </h2>
+                            <span id="overdue-badge" class="text-xs bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 font-bold px-2.5 py-0.5 rounded-full">0 Overdue</span>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-xs text-left">
+                                <thead class="bg-slate-50 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400 uppercase border-b border-slate-200 dark:border-slate-700">
+                                    <tr>
+                                        <th class="py-2.5 px-3">Book Title</th>
+                                        <th class="py-2.5 px-3">Borrower</th>
+                                        <th class="py-2.5 px-3">Due Date</th>
+                                        <th class="py-2.5 px-3 text-right">Estimated Fine</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dashboard-overdue-list" class="divide-y divide-slate-100 dark:divide-slate-700/50">
+                                    <!-- Dynamic items -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Low Stock Inventory Alerts -->
+                    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/60 p-5 flex flex-col justify-between">
+                        <div>
+                            <h2 class="text-sm font-bold text-slate-800 dark:text-white mb-2 flex items-center gap-2">
+                                <i class="fa-solid fa-boxes-stacked text-rose-500"></i> Stock Level Alerts
+                            </h2>
+                            <p class="text-xs text-slate-400 mb-4">Books with low or zero available copies.</p>
+                            <div id="low-stock-list" class="space-y-2.5 text-xs">
+                                <!-- Dynamic Low Stock Items -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 2: BOOK CATALOG -->
+            <section id="section-catalog" class="tab-content hidden space-y-4">
+                <!-- Controls & Filtering Toolbar -->
+                <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/60 flex flex-col lg:flex-row justify-between items-center gap-4">
+                    <div class="flex flex-1 w-full lg:w-auto items-center gap-3 flex-wrap">
+                        <div class="relative flex-1 min-w-[200px]">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+                            <input type="text" id="catalog-search" oninput="renderCatalog()" placeholder="Search title, author, ISBN..." 
+                                   class="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-sky-500">
+                        </div>
+                        <select id="catalog-category-filter" onchange="renderCatalog()" class="bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-xs py-2 px-3 focus:outline-none focus:ring-2 focus:ring-sky-500">
+                            <option value="All">All Categories</option>
+                        </select>
+                        <select id="catalog-status-filter" onchange="renderCatalog()" class="bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-xs py-2 px-3 focus:outline-none focus:ring-2 focus:ring-sky-500">
+                            <option value="All">All Statuses</option>
+                            <option value="Available">Available Only</option>
+                            <option value="Unavailable">Out of Stock</option>
+                        </select>
+                    </div>
+
+                    <div class="flex items-center space-x-2 w-full lg:w-auto justify-end">
+                        <!-- View Switcher -->
+                        <div class="bg-slate-100 dark:bg-slate-700 p-1 rounded-xl flex items-center space-x-1">
+                            <button onclick="setCatalogView('grid')" id="btn-view-grid" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-white dark:bg-slate-800 text-sky-600 shadow-sm">
+                                <i class="fa-solid fa-grip"></i> Grid
+                            </button>
+                            <button onclick="setCatalogView('table')" id="btn-view-table" class="px-2.5 py-1 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300">
+                                <i class="fa-solid fa-list"></i> Table
+                            </button>
+                        </div>
+                        <button onclick="openBookModal()" class="bg-sky-600 hover:bg-sky-700 text-white px-3.5 py-2 rounded-xl text-xs font-semibold transition flex items-center gap-1.5 shadow-sm">
+                            <i class="fa-solid fa-plus"></i> Add Book
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Catalog Content Views -->
+                <div id="catalog-grid-view" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    <!-- Dynamic Grid Cards -->
+                </div>
+
+                <div id="catalog-table-view" class="hidden bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/60 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-xs text-left">
+                            <thead class="bg-slate-50 dark:bg-slate-700/50 text-slate-700 dark:text-slate-300 uppercase font-semibold border-b border-slate-200 dark:border-slate-700">
+                                <tr>
+                                    <th class="py-3 px-4">Book Details</th>
+                                    <th class="py-3 px-4">Category</th>
+                                    <th class="py-3 px-4">Shelf Location</th>
+                                    <th class="py-3 px-4">ISBN</th>
+                                    <th class="py-3 px-4 text-center">Copies (Avail / Total)</th>
+                                    <th class="py-3 px-4 text-center">Status</th>
+                                    <th class="py-3 px-4 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="catalog-table-body" class="divide-y divide-slate-100 dark:divide-slate-700/50">
+                                <!-- Dynamic Table Rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 3: MEMBERS DIRECTORY -->
+            <section id="section-members" class="tab-content hidden space-y-4">
+                <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/60 flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div class="flex flex-1 w-full md:w-auto items-center gap-3">
+                        <div class="relative flex-1">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+                            <input type="text" id="member-search" oninput="renderMembers()" placeholder="Search member by name, code, or email..." 
+                                   class="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-sky-500">
+                        </div>
+                        <select id="member-type-filter" onchange="renderMembers()" class="bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-xs py-2 px-3 focus:outline-none focus:ring-2 focus:ring-sky-500">
+                            <option value="All">All Types</option>
+                            <option value="Student">Student</option>
+                            <option value="Faculty">Faculty</option>
+                            <option value="Standard">Standard</option>
+                        </select>
+                    </div>
+                    <button onclick="openMemberModal()" class="w-full md:w-auto bg-sky-600 hover:bg-sky-700 text-white px-3.5 py-2 rounded-xl text-xs font-semibold transition flex items-center justify-center gap-1.5 shadow-sm">
+                        <i class="fa-solid fa-user-plus"></i> Add New Member
+                    </button>
+                </div>
+
+                <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/60 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-xs text-left">
+                            <thead class="bg-slate-50 dark:bg-slate-700/50 text-slate-700 dark:text-slate-300 uppercase font-semibold border-b border-slate-200 dark:border-slate-700">
+                                <tr>
+                                    <th class="py-3 px-4">Member Info</th>
+                                    <th class="py-3 px-4">Contact</th>
+                                    <th class="py-3 px-4">Type</th>
+                                    <th class="py-3 px-4">Member ID</th>
+                                    <th class="py-3 px-4 text-center">Active Loans</th>
+                                    <th class="py-3 px-4 text-center">Status</th>
+                                    <th class="py-3 px-4 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="members-table-body" class="divide-y divide-slate-100 dark:divide-slate-700/50">
+                                <!-- Dynamic Member Rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 4: ISSUE & RETURN CENTER -->
+            <section id="section-circulation" class="tab-content hidden space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Issue Book Card -->
+                    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/60 p-5">
+                        <h2 class="text-sm font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-2 border-b border-slate-100 dark:border-slate-700 pb-3">
+                            <i class="fa-solid fa-book-medical text-sky-600"></i> New Book Issue Workflow
+                        </h2>
+                        <form id="issue-book-form" onsubmit="handleIssueBook(event)" class="space-y-4 text-xs">
+                            <div>
+                                <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Select Member *</label>
+                                <select id="issue-member-select" required class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 focus:ring-2 focus:ring-sky-500 focus:outline-none">
+                                    <!-- Dynamic Options -->
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Select Available Book *</label>
+                                <select id="issue-book-select" required class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 focus:ring-2 focus:ring-sky-500 focus:outline-none">
+                                    <!-- Dynamic Options -->
+                                </select>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Issue Date</label>
+                                    <input type="date" id="issue-date" required class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-700 text-slate-500 focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Calculated Due Date</label>
+                                    <input type="date" id="issue-due-date" required class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 focus:ring-2 focus:ring-sky-500 focus:outline-none">
+                                </div>
+                            </div>
+                            <button type="submit" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-semibold py-2.5 rounded-xl transition flex items-center justify-center gap-2 shadow-sm">
+                                <i class="fa-solid fa-check"></i> Complete Book Issue
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Policy Box -->
+                    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/60 p-5 flex flex-col justify-between">
+                        <div>
+                            <h2 class="text-sm font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-2 border-b border-slate-100 dark:border-slate-700 pb-3">
+                                <i class="fa-solid fa-shield-halved text-emerald-500"></i> Circulation Policies & Fine Matrix
+                            </h2>
+                            <ul class="text-xs text-slate-600 dark:text-slate-300 space-y-3">
+                                <li class="flex items-start gap-2">
+                                    <i class="fa-solid fa-clock text-amber-500 mt-0.5"></i>
+                                    <span><strong>Default Loan Duration:</strong> Configured at <span id="policy-loan-days" class="font-bold text-sky-600">14</span> days.</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <i class="fa-solid fa-dollar-sign text-emerald-500 mt-0.5"></i>
+                                    <span><strong>Overdue Fine:</strong> <span id="policy-fine-rate" class="font-bold text-emerald-600">$1.00</span> per overdue day per book.</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <i class="fa-solid fa-user-lock text-rose-500 mt-0.5"></i>
+                                    <span><strong>Member Quotas:</strong> Students (3 books max), Faculty (10 books max), Standard (2 books max).</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="mt-4 p-3.5 bg-sky-50 dark:bg-sky-950/30 border border-sky-100 dark:border-sky-800/40 rounded-xl">
+                            <p class="text-xs text-sky-800 dark:text-sky-300 leading-relaxed">
+                                <i class="fa-solid fa-circle-info text-sky-500 mr-1"></i> Quick Returns can be processed below with automatic overdue fine computation or fine waiver support!
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active Borrowing Table -->
+                <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/60 overflow-hidden">
+                    <div class="p-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
+                        <h3 class="font-bold text-slate-800 dark:text-white text-xs">Currently Active Borrowed Books</h3>
+                        <span class="text-[11px] text-slate-400">Click actions to return or renew</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-xs text-left">
+                            <thead class="bg-slate-50 dark:bg-slate-700/50 text-slate-700 dark:text-slate-300 uppercase font-semibold border-b border-slate-200 dark:border-slate-700">
+                                <tr>
+                                    <th class="py-3 px-4">Issued Book</th>
+                                    <th class="py-3 px-4">Borrower</th>
+                                    <th class="py-3 px-4">Issue Date</th>
+                                    <th class="py-3 px-4">Due Date</th>
+                                    <th class="py-3 px-4">Status & Fine</th>
+                                    <th class="py-3 px-4 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="active-loans-table-body" class="divide-y divide-slate-100 dark:divide-slate-700/50">
+                                <!-- Dynamic Rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 5: TRANSACTION AUDIT LOGS -->
+            <section id="section-history" class="tab-content hidden space-y-4">
+                <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/60 flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div class="flex items-center space-x-3 w-full md:w-auto">
+                        <h2 class="font-bold text-slate-800 dark:text-white text-sm">Circulation Audit Logs</h2>
+                        <select id="log-type-filter" onchange="renderHistoryLogs()" class="bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-xs py-1.5 px-3 focus:outline-none">
+                            <option value="All">All Actions</option>
+                            <option value="Issue">Issue Only</option>
+                            <option value="Return">Return Only</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="exportLogsCSV()" class="text-xs bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-semibold px-3 py-2 rounded-xl transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-file-csv text-emerald-500"></i> Export CSV
+                        </button>
+                        <button onclick="clearHistoryLogs()" class="text-xs text-rose-600 hover:text-rose-700 dark:text-rose-400 font-semibold border border-rose-200 dark:border-rose-900/50 hover:bg-rose-50 dark:hover:bg-rose-900/20 px-3 py-2 rounded-xl transition">
+                            Clear Audit Logs
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/60 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-xs text-left">
+                            <thead class="bg-slate-50 dark:bg-slate-700/50 text-slate-700 dark:text-slate-300 uppercase font-semibold border-b border-slate-200 dark:border-slate-700">
+                                <tr>
+                                    <th class="py-3 px-4">Date & Time</th>
+                                    <th class="py-3 px-4">Action</th>
+                                    <th class="py-3 px-4">Book Title</th>
+                                    <th class="py-3 px-4">Member Name</th>
+                                    <th class="py-3 px-4 text-right">Fine Collected</th>
+                                </tr>
+                            </thead>
+                            <tbody id="history-table-body" class="divide-y divide-slate-100 dark:divide-slate-700/50">
+                                <!-- Dynamic Rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 6: REPORTS & ANALYTICS -->
+            <section id="section-reports" class="tab-content hidden space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/60">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Top Borrowed Books</h3>
+                        <div id="report-top-books" class="space-y-3 text-xs">
+                            <!-- Dynamic list -->
+                        </div>
+                    </div>
+                    <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/60">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Most Active Members</h3>
+                        <div id="report-top-members" class="space-y-3 text-xs">
+                            <!-- Dynamic list -->
+                        </div>
+                    </div>
+                    <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/60">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Collection Summary</h3>
+                        <div class="space-y-3 text-xs">
+                            <div class="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-slate-700">
+                                <span class="text-slate-500">Total Capital Titles:</span>
+                                <span id="rep-total-titles" class="font-bold text-slate-800 dark:text-white">0</span>
+                            </div>
+                            <div class="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-slate-700">
+                                <span class="text-slate-500">Overall Copy Count:</span>
+                                <span id="rep-total-copies" class="font-bold text-slate-800 dark:text-white">0</span>
+                            </div>
+                            <div class="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-slate-700">
+                                <span class="text-slate-500">Total Fines Collected:</span>
+                                <span id="rep-fines-collected" class="font-bold text-emerald-600">$0.00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 7: SYSTEM SETTINGS -->
+            <section id="section-settings" class="tab-content hidden space-y-6">
+                <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/60 p-6 max-w-2xl">
+                    <h2 class="text-sm font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-2 border-b border-slate-100 dark:border-slate-700 pb-3">
+                        <i class="fa-solid fa-sliders text-sky-500"></i> Global Library Parameters
+                    </h2>
+                    <form id="settings-form" onsubmit="saveSettings(event)" class="space-y-4 text-xs">
+                        <div>
+                            <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Standard Loan Period (Days)</label>
+                            <input type="number" id="setting-loan-days" min="1" max="90" required class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 focus:ring-2 focus:ring-sky-500">
+                        </div>
+                        <div>
+                            <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Daily Overdue Fine Amount ($)</label>
+                            <input type="number" step="0.25" id="setting-fine-rate" min="0" required class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 focus:ring-2 focus:ring-sky-500">
+                        </div>
+                        <div class="pt-2">
+                            <button type="submit" class="bg-sky-600 hover:bg-sky-700 text-white font-semibold px-5 py-2.5 rounded-xl transition shadow-sm">
+                                Save System Configuration
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- MODAL 1: BOOK FORM -->
+    <div id="book-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 w-full max-w-lg overflow-hidden animate-fade-in">
+            <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
+                <h3 id="book-modal-title" class="font-bold text-slate-800 dark:text-white text-sm">Add New Book</h3>
+                <button onclick="closeBookModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white">
+                    <i class="fa-solid fa-xmark text-base"></i>
+                </button>
+            </div>
+            <form id="book-form" onsubmit="saveBookForm(event)" class="p-6 space-y-3.5 text-xs">
+                <input type="hidden" id="book-id">
+                <div>
+                    <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Book Title *</label>
+                    <input type="text" id="book-title" required class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-sky-500">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Author *</label>
+                        <input type="text" id="book-author" required class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-sky-500">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Category / Genre *</label>
+                        <input type="text" id="book-category" required class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-sky-500">
+                    </div>
+                </div>
+                <div class="grid grid-cols-3 gap-3">
+                    <div>
+                        <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">ISBN *</label>
+                        <input type="text" id="book-isbn" required class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-sky-500">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Shelf / Rack Location</label>
+                        <input type="text" id="book-shelf" placeholder="A1-B3" class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-sky-500">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Total Copies *</label>
+                        <input type="number" id="book-copies" min="1" max="100" required class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-sky-500">
+                    </div>
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Cover Image URL (Optional)</label>
+                    <input type="url" id="book-cover" placeholder="https://..." class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-sky-500">
+                </div>
+                <div class="flex justify-end space-x-3 pt-3 border-t border-slate-100 dark:border-slate-700">
+                    <button type="button" onclick="closeBookModal()" class="px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 font-semibold hover:bg-slate-50 dark:hover:bg-slate-700">Cancel</button>
+                    <button type="submit" class="px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-semibold transition">Save Book</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 2: MEMBER FORM -->
+    <div id="member-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 w-full max-w-lg overflow-hidden animate-fade-in">
+            <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
+                <h3 id="member-modal-title" class="font-bold text-slate-800 dark:text-white text-sm">Add New Member</h3>
+                <button onclick="closeMemberModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white">
+                    <i class="fa-solid fa-xmark text-base"></i>
+                </button>
+            </div>
+            <form id="member-form" onsubmit="saveMemberForm(event)" class="p-6 space-y-3.5 text-xs">
+                <input type="hidden" id="member-id">
+                <div>
+                    <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Full Name *</label>
+                    <input type="text" id="member-name" required class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-sky-500">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Email Address *</label>
+                    <input type="email" id="member-email" required class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-sky-500">
+                </div>
+                <div class="grid grid-cols-3 gap-3">
+                    <div>
+                        <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Membership Type *</label>
+                        <select id="member-type" required class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-sky-500">
+                            <option value="Student">Student</option>
+                            <option value="Faculty">Faculty</option>
+                            <option value="Standard">Standard</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Member Code *</label>
+                        <input type="text" id="member-code" required class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-sky-500">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Phone *</label>
+                        <input type="tel" id="member-phone" required class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-sky-500">
+                    </div>
+                </div>
+                <div class="flex justify-end space-x-3 pt-3 border-t border-slate-100 dark:border-slate-700">
+                    <button type="button" onclick="closeMemberModal()" class="px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 font-semibold hover:bg-slate-50 dark:hover:bg-slate-700">Cancel</button>
+                    <button type="submit" class="px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-semibold transition">Save Member</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 3: MEMBER HISTORY & DETAILS -->
+    <div id="member-history-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 w-full max-w-xl overflow-hidden animate-fade-in">
+            <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
+                <h3 id="member-history-title" class="font-bold text-slate-800 dark:text-white text-sm">Member History</h3>
+                <button onclick="closeMemberHistoryModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white">
+                    <i class="fa-solid fa-xmark text-base"></i>
+                </button>
+            </div>
+            <div class="p-6 space-y-4 text-xs">
+                <div id="member-history-info" class="p-3 bg-slate-50 dark:bg-slate-700/40 rounded-xl space-y-1 text-slate-600 dark:text-slate-300">
+                    <!-- Dynamic -->
+                </div>
+                <h4 class="font-bold text-slate-800 dark:text-white border-b border-slate-100 dark:border-slate-700 pb-2">Active & Past Borrowings</h4>
+                <div id="member-history-list" class="max-h-60 overflow-y-auto space-y-2">
+                    <!-- Dynamic Borrowing list -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST CONTAINER -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 space-y-2 pointer-events-none"></div>
+
+    <!-- JAVASCRIPT LOGIC ENGINE -->
+    <script>
+        // Default System Settings
+        let settings = {
+            loanPeriodDays: 14,
+            fineRatePerDay: 1.00
+        };
+
+        // Initial Mock Demo Data
+        const initialSampleData = {
+            settings: { loanPeriodDays: 14, fineRatePerDay: 1.00 },
+            books: [
+                { id: 'b1', title: 'The Great Gatsby', author: 'F. Scott Fitzgerald', category: 'Classic', isbn: '978-0743273565', shelf: 'A1-02', totalCopies: 4, availableCopies: 3, cover: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=300' },
+                { id: 'b2', title: '1984', author: 'George Orwell', category: 'Dystopian', isbn: '978-0451524935', shelf: 'B2-11', totalCopies: 5, availableCopies: 4, cover: 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=300' },
+                { id: 'b3', title: 'To Kill a Mockingbird', author: 'Harper Lee', category: 'Classic', isbn: '978-0061120084', shelf: 'A1-09', totalCopies: 3, availableCopies: 3, cover: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=300' },
+                { id: 'b4', title: 'Dune', author: 'Frank Herbert', category: 'Sci-Fi', isbn: '978-0441172719', shelf: 'C3-04', totalCopies: 3, availableCopies: 1, cover: 'https://images.unsplash.com/photo-1532012197267-da84d127e765?w=300' },
+                { id: 'b5', title: 'Clean Code', author: 'Robert C. Martin', category: 'Technology', isbn: '978-0132350884', shelf: 'T1-01', totalCopies: 2, availableCopies: 0, cover: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=300' }
+            ],
+            members: [
+                { id: 'm1', name: 'Alice Smith', email: 'alice@example.com', type: 'Student', code: 'MEM-101', phone: '+1 555-0142', status: 'Active' },
+                { id: 'm2', name: 'Dr. Bob Jones', email: 'bob@example.com', type: 'Faculty', code: 'MEM-102', phone: '+1 555-0189', status: 'Active' },
+                { id: 'm3', name: 'Carol Danvers', email: 'carol@example.com', type: 'Standard', code: 'MEM-103', phone: '+1 555-0199', status: 'Active' }
+            ],
+            loans: [
+                { id: 'l1', bookId: 'b1', memberId: 'm1', issueDate: getFormattedDate(-10), dueDate: getFormattedDate(4) },
+                { id: 'l2', bookId: 'b2', memberId: 'm2', issueDate: getFormattedDate(-22), dueDate: getFormattedDate(-8) },
+                { id: 'l3', bookId: 'b5', memberId: 'm3', issueDate: getFormattedDate(-18), dueDate: getFormattedDate(-4) }
+            ],
+            logs: [
+                { id: 'lg1', timestamp: new Date().toLocaleString(), action: 'Issue', bookTitle: 'The Great Gatsby', memberName: 'Alice Smith', fine: '$0.00' },
+                { id: 'lg2', timestamp: new Date().toLocaleString(), action: 'Issue', bookTitle: '1984', memberName: 'Dr. Bob Jones', fine: '$0.00' },
+                { id: 'lg3', timestamp: new Date().toLocaleString(), action: 'Return', bookTitle: 'Dune', memberName: 'Alice Smith', fine: '$2.00' }
+            ]
+        };
+
+        // Application State Arrays
+        let books = [];
+        let members = [];
+        let loans = [];
+        let logs = [];
+        let activeCatalogView = 'grid';
+
+        // Chart References
+        let chartTrends = null;
+        let chartGenres = null;
+
+        function getFormattedDate(offsetDays = 0) {
+            const d = new Date();
+            d.setDate(d.getDate() + offsetDays);
+            return d.toISOString().split('T')[0];
+        }
+
+        // Initialize Application
+        function initApp() {
+            const storedSettings = localStorage.getItem('athena_settings');
+            const storedBooks = localStorage.getItem('athena_books');
+            const storedMembers = localStorage.getItem('athena_members');
+            const storedLoans = localStorage.getItem('athena_loans');
+            const storedLogs = localStorage.getItem('athena_logs');
+
+            if (storedBooks && storedMembers && storedLoans) {
+                settings = storedSettings ? JSON.parse(storedSettings) : initialSampleData.settings;
+                books = JSON.parse(storedBooks);
+                members = JSON.parse(storedMembers);
+                loans = JSON.parse(storedLoans);
+                logs = storedLogs ? JSON.parse(storedLogs) : [];
+            } else {
+                loadSampleData();
+            }
+
+            // Sync Settings Inputs
+            document.getElementById('setting-loan-days').value = settings.loanPeriodDays;
+            document.getElementById('setting-fine-rate').value = settings.fineRatePerDay;
+
+            // Set Issue Date Picker Defaults
+            const today = getFormattedDate(0);
+            document.getElementById('issue-date').value = today;
+            recalculateDueDate();
+
+            document.getElementById('issue-date').addEventListener('change', recalculateDueDate);
+
+            startClock();
+            updateAll();
+        }
+
+        function recalculateDueDate() {
+            const issueVal = document.getElementById('issue-date').value;
+            if (!issueVal) return;
+            const issueDateObj = new Date(issueVal);
+            issueDateObj.setDate(issueDateObj.getDate() + parseInt(settings.loanPeriodDays));
+            document.getElementById('issue-due-date').value = issueDateObj.toISOString().split('T')[0];
+        }
+
+        function loadSampleData() {
+            settings = { ...initialSampleData.settings };
+            books = [...initialSampleData.books];
+            members = [...initialSampleData.members];
+            loans = [...initialSampleData.loans];
+            logs = [...initialSampleData.logs];
+            saveToStorage();
+        }
+
+        function resetToSampleData() {
+            if (confirm("Reset library system to initial demo state?")) {
+                loadSampleData();
+                updateAll();
+                showToast("System restored to demo state", "info");
+            }
+        }
+
+        function saveToStorage() {
+            localStorage.setItem('athena_settings', JSON.stringify(settings));
+            localStorage.setItem('athena_books', JSON.stringify(books));
+            localStorage.setItem('athena_members', JSON.stringify(members));
+            localStorage.setItem('athena_loans', JSON.stringify(loans));
+            localStorage.setItem('athena_logs', JSON.stringify(logs));
+        }
+
+        function updateAll() {
+            renderStats();
+            renderDashboard();
+            renderCatalog();
+            renderMembers();
+            renderCirculationOptions();
+            renderActiveLoans();
+            renderHistoryLogs();
+            renderReports();
+            populateCategoryFilter();
+            initCharts();
+            
+            document.getElementById('policy-loan-days').textContent = settings.loanPeriodDays;
+            document.getElementById('policy-fine-rate').textContent = `$${parseFloat(settings.fineRatePerDay).toFixed(2)}`;
+        }
+
+        function startClock() {
+            const clockEl = document.getElementById('live-clock');
+            setInterval(() => {
+                clockEl.textContent = new Date().toLocaleTimeString();
+            }, 1000);
+            clockEl.textContent = new Date().toLocaleTimeString();
+        }
+
+        // Navigation Switcher
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-sky-50', 'dark:bg-sky-900/30', 'text-sky-600', 'dark:text-sky-400');
+                btn.classList.add('text-slate-600', 'dark:text-slate-300');
+            });
+
+            document.getElementById(`section-${tabId}`).classList.remove('hidden');
+            const activeNav = document.getElementById(`nav-${tabId}`);
+            if (activeNav) {
+                activeNav.classList.add('bg-sky-50', 'dark:bg-sky-900/30', 'text-sky-600', 'dark:text-sky-400');
+                activeNav.classList.remove('text-slate-600', 'dark:text-slate-300');
+            }
+
+            if (tabId === 'dashboard') {
+                setTimeout(() => initCharts(), 50);
+            }
+        }
+
+        // Fine Calculator Helper
+        function calculateFine(dueDateStr) {
+            const due = new Date(dueDateStr);
+            const today = new Date();
+            today.setHours(0,0,0,0);
+            due.setHours(0,0,0,0);
+
+            const diffTime = today - due;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (diffDays > 0) {
+                return { daysOverdue: diffDays, fine: diffDays * settings.fineRatePerDay };
+            }
+            return { daysOverdue: 0, fine: 0 };
+        }
+
+        // Render Overview Stats
+        function renderStats() {
+            const totalTitles = books.length;
+            const availableCopies = books.reduce((acc, b) => acc + Number(b.availableCopies), 0);
+            const activeLoansCount = loans.length;
+            const totalMembersCount = members.length;
+            const totalFines = logs.reduce((acc, l) => {
+                const val = parseFloat(l.fine.replace('$', '')) || 0;
+                return acc + val;
+            }, 0);
+
+            document.getElementById('stat-total-books').textContent = totalTitles;
+            document.getElementById('stat-available-copies').textContent = availableCopies;
+            document.getElementById('stat-issued-books').textContent = activeLoansCount;
+            document.getElementById('stat-total-members').textContent = totalMembersCount;
+            document.getElementById('stat-total-fines').textContent = `$${totalFines.toFixed(2)}`;
+        }
+
+        // Render Dashboard Widgets
+        function renderDashboard() {
+            const overdueBody = document.getElementById('dashboard-overdue-list');
+            const lowStockList = document.getElementById('low-stock-list');
+            const overdueBadge = document.getElementById('overdue-badge');
+
+            overdueBody.innerHTML = '';
+            let overdueCounter = 0;
+
+            loans.forEach(loan => {
+                const fineInfo = calculateFine(loan.dueDate);
+                if (fineInfo.daysOverdue > 0) {
+                    overdueCounter++;
+                    const book = books.find(b => b.id === loan.bookId) || { title: 'Unknown' };
+                    const member = members.find(m => m.id === loan.memberId) || { name: 'Unknown' };
+
+                    const tr = document.createElement('tr');
+                    tr.className = 'hover:bg-slate-50 dark:hover:bg-slate-700/30';
+                    tr.innerHTML = `
+                        <td class="py-2.5 px-3 font-semibold text-slate-800 dark:text-slate-100">${escapeHtml(book.title)}</td>
+                        <td class="py-2.5 px-3 text-slate-600 dark:text-slate-300">${escapeHtml(member.name)}</td>
+                        <td class="py-2.5 px-3 text-rose-600 font-semibold">${loan.dueDate} (${fineInfo.daysOverdue}d late)</td>
+                        <td class="py-2.5 px-3 text-right font-bold text-rose-600">$${fineInfo.fine.toFixed(2)}</td>
+                    `;
+                    overdueBody.appendChild(tr);
+                }
+            });
+
+            if (overdueCounter === 0) {
+                overdueBody.innerHTML = `<tr><td colspan="4" class="py-4 text-center text-slate-400">No overdue items recorded! 🎉</td></tr>`;
+            }
+            overdueBadge.textContent = `${overdueCounter} Overdue`;
+
+            // Low Stock Items
+            lowStockList.innerHTML = '';
+            const lowStockBooks = books.filter(b => b.availableCopies <= 1);
+            if (lowStockBooks.length === 0) {
+                lowStockList.innerHTML = `<p class="text-slate-400 py-2">All books have adequate stock levels.</p>`;
+            } else {
+                lowStockBooks.forEach(book => {
+                    const div = document.createElement('div');
+                    div.className = 'flex justify-between items-center p-2 rounded-xl bg-slate-50 dark:bg-slate-700/40 border border-slate-100 dark:border-slate-700';
+                    div.innerHTML = `
+                        <div class="truncate mr-2">
+                            <span class="font-semibold text-slate-800 dark:text-white block truncate">${escapeHtml(book.title)}</span>
+                            <span class="text-[10px] text-slate-400 font-mono">${escapeHtml(book.isbn)}</span>
+                        </div>
+                        <span class="px-2 py-0.5 text-[10px] font-bold rounded-full ${book.availableCopies === 0 ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300'}">
+                            ${book.availableCopies} Left
+                        </span>
+                    `;
+                    lowStockList.appendChild(div);
+                });
+            }
+        }
+
+        // Charts Engine
+        function initCharts() {
+            const ctxTrends = document.getElementById('chart-borrowing-trends');
+            const ctxGenres = document.getElementById('chart-genre-distribution');
+
+            if (!ctxTrends || !ctxGenres) return;
+
+            if (chartTrends) chartTrends.destroy();
+            if (chartGenres) chartGenres.destroy();
+
+            // Borrowing Activity Trend Chart
+            chartTrends = new Chart(ctxTrends, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+                    datasets: [{
+                        label: 'Loans Issued',
+                        data: [12, 19, 15, 25, 22, 30, loans.length + 15],
+                        borderColor: '#0284c7',
+                        backgroundColor: 'rgba(2, 132, 199, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+
+            // Genre Distribution Pie Chart
+            const genreCounts = {};
+            books.forEach(b => {
+                genreCounts[b.category] = (genreCounts[b.category] || 0) + 1;
+            });
+
+            chartGenres = new Chart(ctxGenres, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(genreCounts),
+                    datasets: [{
+                        data: Object.values(genreCounts),
+                        backgroundColor: ['#0284c7', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#64748b']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+        }
+
+        // Catalog View Toggle & Renderer
+        function setCatalogView(mode) {
+            activeCatalogView = mode;
+            const gridView = document.getElementById('catalog-grid-view');
+            const tableView = document.getElementById('catalog-table-view');
+            const btnGrid = document.getElementById('btn-view-grid');
+            const btnTable = document.getElementById('btn-view-table');
+
+            if (mode === 'grid') {
+                gridView.classList.remove('hidden');
+                tableView.classList.add('hidden');
+                btnGrid.classList.add('bg-white', 'dark:bg-slate-800', 'text-sky-600', 'shadow-sm');
+                btnTable.classList.remove('bg-white', 'dark:bg-slate-800', 'text-sky-600', 'shadow-sm');
+            } else {
+                gridView.classList.add('hidden');
+                tableView.classList.remove('hidden');
+                btnTable.classList.add('bg-white', 'dark:bg-slate-800', 'text-sky-600', 'shadow-sm');
+                btnGrid.classList.remove('bg-white', 'dark:bg-slate-800', 'text-sky-600', 'shadow-sm');
+            }
+            renderCatalog();
+        }
+
+        function renderCatalog() {
+            const gridContainer = document.getElementById('catalog-grid-view');
+            const tbody = document.getElementById('catalog-table-body');
+            const searchVal = document.getElementById('catalog-search').value.toLowerCase();
+            const catFilter = document.getElementById('catalog-category-filter').value;
+            const statusFilter = document.getElementById('catalog-status-filter').value;
+
+            gridContainer.innerHTML = '';
+            tbody.innerHTML = '';
+
+            const filtered = books.filter(book => {
+                const matchesSearch = book.title.toLowerCase().includes(searchVal) ||
+                                      book.author.toLowerCase().includes(searchVal) ||
+                                      book.isbn.toLowerCase().includes(searchVal);
+                const matchesCategory = catFilter === 'All' || book.category === catFilter;
+                const matchesStatus = statusFilter === 'All' || 
+                                     (statusFilter === 'Available' && book.availableCopies > 0) ||
+                                     (statusFilter === 'Unavailable' && book.availableCopies === 0);
+                return matchesSearch && matchesCategory && matchesStatus;
+            });
+
+            if (filtered.length === 0) {
+                const emptyMsg = `<div class="col-span-full py-12 text-center text-slate-400">No books found matching search criteria.</div>`;
+                gridContainer.innerHTML = emptyMsg;
+                tbody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-slate-400">No matching books found.</td></tr>`;
+                return;
+            }
+
+            filtered.forEach(book => {
+                const isAvailable = book.availableCopies > 0;
+                const coverUrl = book.cover || 'https://placehold.co/300x400/0284c7/ffffff?text=' + encodeURIComponent(book.title);
+
+                // Grid Card
+                const card = document.createElement('div');
+                card.className = 'bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700/60 overflow-hidden shadow-sm flex flex-col justify-between hover:shadow-md transition';
+                card.innerHTML = `
+                    <div>
+                        <div class="h-40 bg-slate-100 dark:bg-slate-700 relative overflow-hidden">
+                            <img src="${coverUrl}" onerror="this.src='https://placehold.co/300x400/0284c7/ffffff?text=Book'" class="w-full h-full object-cover">
+                            <span class="absolute top-2 right-2 text-[10px] font-bold px-2.5 py-0.5 rounded-full ${isAvailable ? 'bg-emerald-500 text-white' : 'bg-rose-500 text-white'}">
+                                ${isAvailable ? 'Available' : 'Out of Stock'}
+                            </span>
+                        </div>
+                        <div class="p-4">
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400">${escapeHtml(book.category)}</span>
+                            <h4 class="font-bold text-slate-800 dark:text-white text-xs mt-1 line-clamp-1">${escapeHtml(book.title)}</h4>
+                            <p class="text-xs text-slate-400">${escapeHtml(book.author)}</p>
+                            <div class="mt-3 text-[11px] text-slate-500 dark:text-slate-400 space-y-1">
+                                <div><i class="fa-solid fa-barcode mr-1"></i> ${escapeHtml(book.isbn)}</div>
+                                <div><i class="fa-solid fa-location-dot mr-1"></i> Rack: ${escapeHtml(book.shelf || 'N/A')}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-3 bg-slate-50 dark:bg-slate-700/30 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between">
+                        <span class="text-xs font-semibold text-slate-600 dark:text-slate-300">${book.availableCopies} / ${book.totalCopies} Copies</span>
+                        <div class="space-x-1">
+                            <button onclick="editBook('${book.id}')" class="p-1.5 text-slate-500 hover:text-sky-600 dark:hover:text-sky-400"><i class="fa-solid fa-pen-to-square"></i></button>
+                            <button onclick="deleteBook('${book.id}')" class="p-1.5 text-slate-500 hover:text-rose-600 dark:hover:text-rose-400"><i class="fa-solid fa-trash-can"></i></button>
+                        </div>
+                    </div>
+                `;
+                gridContainer.appendChild(card);
+
+                // Table Row
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-50 dark:hover:bg-slate-700/30 transition';
+                tr.innerHTML = `
+                    <td class="py-3 px-4">
+                        <div class="font-bold text-slate-800 dark:text-white">${escapeHtml(book.title)}</div>
+                        <div class="text-[11px] text-slate-400">${escapeHtml(book.author)}</div>
+                    </td>
+                    <td class="py-3 px-4"><span class="bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded text-[11px]">${escapeHtml(book.category)}</span></td>
+                    <td class="py-3 px-4 font-mono text-xs text-slate-500">${escapeHtml(book.shelf || 'N/A')}</td>
+                    <td class="py-3 px-4 font-mono text-xs text-slate-500">${escapeHtml(book.isbn)}</td>
+                    <td class="py-3 px-4 text-center font-medium">${book.availableCopies} / ${book.totalCopies}</td>
+                    <td class="py-3 px-4 text-center">
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${isAvailable ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300' : 'bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300'}">
+                            ${isAvailable ? 'Available' : 'Out of Stock'}
+                        </span>
+                    </td>
+                    <td class="py-3 px-4 text-right space-x-1">
+                        <button onclick="editBook('${book.id}')" class="p-1 text-slate-500 hover:text-sky-600"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button onclick="deleteBook('${book.id}')" class="p-1 text-slate-500 hover:text-rose-600"><i class="fa-solid fa-trash-can"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function populateCategoryFilter() {
+            const filter = document.getElementById('catalog-category-filter');
+            const currentVal = filter.value;
+            const categories = ['All', ...new Set(books.map(b => b.category))];
+            
+            filter.innerHTML = categories.map(c => `<option value="${c}">${c === 'All' ? 'All Categories' : c}</option>`).join('');
+            filter.value = categories.includes(currentVal) ? currentVal : 'All';
+        }
+
+        // Book Modals
+        function openBookModal(bookId = null) {
+            const modal = document.getElementById('book-modal');
+            const form = document.getElementById('book-form');
+            form.reset();
+
+            if (bookId) {
+                const book = books.find(b => b.id === bookId);
+                if (book) {
+                    document.getElementById('book-modal-title').textContent = 'Edit Book';
+                    document.getElementById('book-id').value = book.id;
+                    document.getElementById('book-title').value = book.title;
+                    document.getElementById('book-author').value = book.author;
+                    document.getElementById('book-category').value = book.category;
+                    document.getElementById('book-isbn').value = book.isbn;
+                    document.getElementById('book-shelf').value = book.shelf || '';
+                    document.getElementById('book-copies').value = book.totalCopies;
+                    document.getElementById('book-cover').value = book.cover || '';
+                }
+            } else {
+                document.getElementById('book-modal-title').textContent = 'Add New Book';
+                document.getElementById('book-id').value = '';
+            }
+            modal.classList.remove('hidden');
+        }
+
+        function closeBookModal() {
+            document.getElementById('book-modal').classList.add('hidden');
+        }
+
+        function saveBookForm(event) {
+            event.preventDefault();
+            const id = document.getElementById('book-id').value;
+            const title = document.getElementById('book-title').value.trim();
+            const author = document.getElementById('book-author').value.trim();
+            const category = document.getElementById('book-category').value.trim();
+            const isbn = document.getElementById('book-isbn').value.trim();
+            const shelf = document.getElementById('book-shelf').value.trim();
+            const copies = parseInt(document.getElementById('book-copies').value, 10);
+            const cover = document.getElementById('book-cover').value.trim();
+
+            if (id) {
+                const book = books.find(b => b.id === id);
+                if (book) {
+                    const issuedDiff = book.totalCopies - book.availableCopies;
+                    if (copies < issuedDiff) {
+                        showToast(`Cannot set total copies lower than current active loans (${issuedDiff}).`, 'error');
+                        return;
+                    }
+                    book.title = title;
+                    book.author = author;
+                    book.category = category;
+                    book.isbn = isbn;
+                    book.shelf = shelf;
+                    book.availableCopies = copies - issuedDiff;
+                    book.totalCopies = copies;
+                    book.cover = cover;
+                    showToast(`Updated "${title}" successfully`);
+                }
+            } else {
+                const newBook = {
+                    id: 'b_' + Date.now(),
+                    title,
+                    author,
+                    category,
+                    isbn,
+                    shelf,
+                    totalCopies: copies,
+                    availableCopies: copies,
+                    cover
+                };
+                books.push(newBook);
+                showToast(`Cataloged "${title}"`);
+            }
+
+            saveToStorage();
+            updateAll();
+            closeBookModal();
+        }
+
+        function editBook(id) { openBookModal(id); }
+
+        function deleteBook(id) {
+            if (loans.some(l => l.bookId === id)) {
+                showToast('Cannot delete a book with active loan records.', 'error');
+                return;
+            }
+            const book = books.find(b => b.id === id);
+            if (confirm(`Delete "${book ? book.title : 'book'}" from library catalog?`)) {
+                books = books.filter(b => b.id !== id);
+                saveToStorage();
+                updateAll();
+                showToast('Book deleted.', 'info');
+            }
+        }
+
+        // Render Members Directory
+        function renderMembers() {
+            const tbody = document.getElementById('members-table-body');
+            const searchVal = document.getElementById('member-search').value.toLowerCase();
+            const typeFilter = document.getElementById('member-type-filter').value;
+
+            tbody.innerHTML = '';
+
+            const filtered = members.filter(m => {
+                const matchesSearch = m.name.toLowerCase().includes(searchVal) ||
+                                      m.email.toLowerCase().includes(searchVal) ||
+                                      m.code.toLowerCase().includes(searchVal);
+                const matchesType = typeFilter === 'All' || m.type === typeFilter;
+                return matchesSearch && matchesType;
+            });
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-slate-400">No members match search query.</td></tr>`;
+                return;
+            }
+
+            filtered.forEach(m => {
+                const activeCount = loans.filter(l => l.memberId === m.id).length;
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-50 dark:hover:bg-slate-700/30 transition';
+                tr.innerHTML = `
+                    <td class="py-3 px-4">
+                        <div class="font-bold text-slate-800 dark:text-white">${escapeHtml(m.name)}</div>
+                        <div class="text-[11px] text-slate-400">Borrower Account</div>
+                    </td>
+                    <td class="py-3 px-4">
+                        <div>${escapeHtml(m.email)}</div>
+                        <div class="text-slate-400 text-[11px]">${escapeHtml(m.phone)}</div>
+                    </td>
+                    <td class="py-3 px-4"><span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 dark:bg-slate-700">${m.type || 'Standard'}</span></td>
+                    <td class="py-3 px-4 font-mono text-sky-600 font-semibold">${escapeHtml(m.code)}</td>
+                    <td class="py-3 px-4 text-center">
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${activeCount > 0 ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300' : 'bg-slate-100 text-slate-600'}">
+                            ${activeCount} Books
+                        </span>
+                    </td>
+                    <td class="py-3 px-4 text-center">
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300">Active</span>
+                    </td>
+                    <td class="py-3 px-4 text-right space-x-1">
+                        <button onclick="viewMemberHistory('${m.id}')" class="p-1 text-slate-500 hover:text-sky-600" title="View History"><i class="fa-solid fa-eye"></i></button>
+                        <button onclick="editMember('${m.id}')" class="p-1 text-slate-500 hover:text-sky-600" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button onclick="deleteMember('${m.id}')" class="p-1 text-slate-500 hover:text-rose-600" title="Delete"><i class="fa-solid fa-user-xmark"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Member History Modal Actions
+        function viewMemberHistory(memberId) {
+            const member = members.find(m => m.id === memberId);
+            if (!member) return;
+
+            const modal = document.getElementById('member-history-modal');
+            const infoDiv = document.getElementById('member-history-info');
+            const listDiv = document.getElementById('member-history-list');
+
+            infoDiv.innerHTML = `
+                <div class="font-bold text-slate-800 dark:text-white text-sm">${escapeHtml(member.name)} (${escapeHtml(member.code)})</div>
+                <div>Email: ${escapeHtml(member.email)} | Phone: ${escapeHtml(member.phone)}</div>
+                <div>Membership Role: <strong>${member.type || 'Standard'}</strong></div>
+            `;
+
+            const memberLoans = loans.filter(l => l.memberId === memberId);
+            const memberLogs = logs.filter(l => l.memberName === member.name);
+
+            listDiv.innerHTML = '';
+            if (memberLoans.length === 0 && memberLogs.length === 0) {
+                listDiv.innerHTML = `<p class="text-slate-400 py-2">No borrowing records found for this member.</p>`;
+            } else {
+                memberLoans.forEach(l => {
+                    const book = books.find(b => b.id === l.bookId) || { title: 'Unknown' };
+                    const div = document.createElement('div');
+                    div.className = 'p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/40 flex justify-between items-center';
+                    div.innerHTML = `
+                        <div>
+                            <span class="font-bold text-amber-900 dark:text-amber-200 block">${escapeHtml(book.title)}</span>
+                            <span class="text-[10px] text-amber-700 dark:text-amber-400">Due: ${l.dueDate}</span>
+                        </div>
+                        <span class="text-[10px] font-bold bg-amber-200 text-amber-800 px-2 py-0.5 rounded-full">Active Borrow</span>
+                    `;
+                    listDiv.appendChild(div);
+                });
+
+                memberLogs.forEach(lg => {
+                    const div = document.createElement('div');
+                    div.className = 'p-2.5 rounded-xl bg-slate-50 dark:bg-slate-700/40 border border-slate-200 dark:border-slate-700 flex justify-between items-center';
+                    div.innerHTML = `
+                        <div>
+                            <span class="font-semibold text-slate-800 dark:text-slate-200 block">${escapeHtml(lg.bookTitle)}</span>
+                            <span class="text-[10px] text-slate-400">${lg.timestamp}</span>
+                        </div>
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${lg.action === 'Issue' ? 'bg-sky-100 text-sky-800' : 'bg-emerald-100 text-emerald-800'}">${lg.action}</span>
+                    `;
+                    listDiv.appendChild(div);
+                });
+            }
+
+            modal.classList.remove('hidden');
+        }
+
+        function closeMemberHistoryModal() {
+            document.getElementById('member-history-modal').classList.add('hidden');
+        }
+
+        // Member Form Modals
+        function openMemberModal(memberId = null) {
+            const modal = document.getElementById('member-modal');
+            const form = document.getElementById('member-form');
+            form.reset();
+
+            if (memberId) {
+                const member = members.find(m => m.id === memberId);
+                if (member) {
+                    document.getElementById('member-modal-title').textContent = 'Edit Member Profile';
+                    document.getElementById('member-id').value = member.id;
+                    document.getElementById('member-name').value = member.name;
+                    document.getElementById('member-email').value = member.email;
+                    document.getElementById('member-type').value = member.type || 'Standard';
+                    document.getElementById('member-code').value = member.code;
+                    document.getElementById('member-phone').value = member.phone;
+                }
+            } else {
+                document.getElementById('member-modal-title').textContent = 'Add New Member';
+                document.getElementById('member-id').value = '';
+                document.getElementById('member-code').value = 'MEM-' + Math.floor(100 + Math.random() * 900);
+            }
+            modal.classList.remove('hidden');
+        }
+
+        function closeMemberModal() {
+            document.getElementById('member-modal').classList.add('hidden');
+        }
+
+        function saveMemberForm(event) {
+            event.preventDefault();
+            const id = document.getElementById('member-id').value;
+            const name = document.getElementById('member-name').value.trim();
+            const email = document.getElementById('member-email').value.trim();
+            const type = document.getElementById('member-type').value;
+            const code = document.getElementById('member-code').value.trim();
+            const phone = document.getElementById('member-phone').value.trim();
+
+            if (id) {
+                const member = members.find(m => m.id === id);
+                if (member) {
+                    member.name = name;
+                    member.email = email;
+                    member.type = type;
+                    member.code = code;
+                    member.phone = phone;
+                    showToast(`Updated profile for ${name}`);
+                }
+            } else {
+                const newMember = {
+                    id: 'm_' + Date.now(),
+                    name,
+                    email,
+                    type,
+                    code,
+                    phone,
+                    status: 'Active'
+                };
+                members.push(newMember);
+                showToast(`Registered member ${name}`);
+            }
+
+            saveToStorage();
+            updateAll();
+            closeMemberModal();
+        }
+
+        function editMember(id) { openMemberModal(id); }
+
+        function deleteMember(id) {
+            if (loans.some(l => l.memberId === id)) {
+                showToast('Cannot delete member with active book loans.', 'error');
+                return;
+            }
+            const member = members.find(m => m.id === id);
+            if (confirm(`Remove member profile for ${member ? member.name : 'user'}?`)) {
+                members = members.filter(m => m.id !== id);
+                saveToStorage();
+                updateAll();
+                showToast('Member removed.', 'info');
+            }
+        }
+
+        // Circulation Options Populator
+        function renderCirculationOptions() {
+            const memberSelect = document.getElementById('issue-member-select');
+            const bookSelect = document.getElementById('issue-book-select');
+
+            const memberOpts = '<option value="">Select Member...</option>' + 
+                members.map(m => `<option value="${m.id}">${escapeHtml(m.name)} (${m.code}) - ${m.type || 'Standard'}</option>`).join('');
+
+            const availableBooks = books.filter(b => b.availableCopies > 0);
+            const bookOpts = '<option value="">Select Available Book...</option>' + 
+                availableBooks.map(b => `<option value="${b.id}">${escapeHtml(b.title)} [Avail: ${b.availableCopies}]</option>`).join('');
+
+            memberSelect.innerHTML = memberOpts;
+            bookSelect.innerHTML = bookOpts;
+        }
+
+        // Handle Book Issue
+        function handleIssueBook(event) {
+            event.preventDefault();
+            const memberId = document.getElementById('issue-member-select').value;
+            const bookId = document.getElementById('issue-book-select').value;
+            const issueDate = document.getElementById('issue-date').value;
+            const dueDate = document.getElementById('issue-due-date').value;
+
+            if (!memberId || !bookId) {
+                showToast('Please select a member and a book.', 'error');
+                return;
+            }
+
+            const book = books.find(b => b.id === bookId);
+            const member = members.find(m => m.id === memberId);
+
+            if (!book || book.availableCopies <= 0) {
+                showToast('No copies available for selected book.', 'error');
+                return;
+            }
+
+            book.availableCopies -= 1;
+
+            const newLoan = {
+                id: 'l_' + Date.now(),
+                bookId,
+                memberId,
+                issueDate,
+                dueDate
+            };
+            loans.push(newLoan);
+
+            logs.unshift({
+                id: 'lg_' + Date.now(),
+                timestamp: new Date().toLocaleString(),
+                action: 'Issue',
+                bookTitle: book.title,
+                memberName: member.name,
+                fine: '$0.00'
+            });
+
+            saveToStorage();
+            updateAll();
+            showToast(`Issued "${book.title}" to ${member.name}`);
+        }
+
+        // Render Active Borrowing Loans
+        function renderActiveLoans() {
+            const tbody = document.getElementById('active-loans-table-body');
+            tbody.innerHTML = '';
+
+            if (loans.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400">No active book loans.</td></tr>`;
+                return;
+            }
+
+            loans.forEach(loan => {
+                const book = books.find(b => b.id === loan.bookId) || { title: 'Unknown' };
+                const member = members.find(m => m.id === loan.memberId) || { name: 'Unknown' };
+                const fineInfo = calculateFine(loan.dueDate);
+
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-50 dark:hover:bg-slate-700/30 transition';
+                tr.innerHTML = `
+                    <td class="py-3 px-4 font-bold text-slate-800 dark:text-white">${escapeHtml(book.title)}</td>
+                    <td class="py-3 px-4 text-slate-600 dark:text-slate-300">${escapeHtml(member.name)}</td>
+                    <td class="py-3 px-4 font-mono text-xs text-slate-400">${loan.issueDate}</td>
+                    <td class="py-3 px-4 font-mono text-xs text-slate-400 font-semibold">${loan.dueDate}</td>
+                    <td class="py-3 px-4">
+                        ${fineInfo.daysOverdue > 0 
+                            ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300">Overdue ($${fineInfo.fine.toFixed(2)})</span>`
+                            : `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300">On Time</span>`
+                        }
+                    </td>
+                    <td class="py-3 px-4 text-right space-x-1">
+                        <button onclick="returnBook('${loan.id}', false)" class="bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] px-2.5 py-1 rounded-lg font-medium transition shadow-sm">
+                            Return
+                        </button>
+                        ${fineInfo.fine > 0 ? `
+                            <button onclick="returnBook('${loan.id}', true)" class="bg-amber-600 hover:bg-amber-700 text-white text-[11px] px-2 py-1 rounded-lg font-medium transition shadow-sm" title="Waive Fine">
+                                Waive Fine
+                            </button>
+                        ` : ''}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function returnBook(loanId, waiveFine = false) {
+            const loanIndex = loans.findIndex(l => l.id === loanId);
+            if (loanIndex === -1) return;
+
+            const loan = loans[loanIndex];
+            const book = books.find(b => b.id === loan.bookId);
+            const member = members.find(m => m.id === loan.memberId);
+            const fineInfo = calculateFine(loan.dueDate);
+
+            const finalFine = waiveFine ? 0 : fineInfo.fine;
+
+            if (book) book.availableCopies += 1;
+            loans.splice(loanIndex, 1);
+
+            logs.unshift({
+                id: 'lg_' + Date.now(),
+                timestamp: new Date().toLocaleString(),
+                action: 'Return',
+                bookTitle: book ? book.title : 'Unknown',
+                memberName: member ? member.name : 'Unknown',
+                fine: `$${finalFine.toFixed(2)}`
+            });
+
+            saveToStorage();
+            updateAll();
+            showToast(`Processed return for "${book ? book.title : 'book'}"`);
+        }
+
+        // Audit Logs Renderer
+        function renderHistoryLogs() {
+            const tbody = document.getElementById('history-table-body');
+            const typeFilter = document.getElementById('log-type-filter').value;
+            tbody.innerHTML = '';
+
+            const filtered = logs.filter(l => typeFilter === 'All' || l.action === typeFilter);
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-400">No logs matching filter criteria.</td></tr>`;
+                return;
+            }
+
+            filtered.forEach(log => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-50 dark:hover:bg-slate-700/30 transition';
+                tr.innerHTML = `
+                    <td class="py-3 px-4 font-mono text-[11px] text-slate-400">${log.timestamp}</td>
+                    <td class="py-3 px-4">
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold ${log.action === 'Issue' ? 'bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-300' : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300'}">${log.action}</span>
+                    </td>
+                    <td class="py-3 px-4 font-semibold text-slate-800 dark:text-white">${escapeHtml(log.bookTitle)}</td>
+                    <td class="py-3 px-4 text-slate-600 dark:text-slate-300">${escapeHtml(log.memberName)}</td>
+                    <td class="py-3 px-4 text-right font-mono text-xs ${log.fine !== '$0.00' ? 'font-bold text-rose-600' : 'text-slate-400'}">${log.fine}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function clearHistoryLogs() {
+            if (confirm("Clear transaction audit trail?")) {
+                logs = [];
+                saveToStorage();
+                renderHistoryLogs();
+                showToast("Logs cleared.", "info");
+            }
+        }
+
+        function exportLogsCSV() {
+            if (logs.length === 0) {
+                showToast("No log data to export.", "error");
+                return;
+            }
+            let csvContent = "data:text/csv;charset=utf-8,Timestamp,Action,Book Title,Member Name,Fine\n";
+            logs.forEach(l => {
+                csvContent += `"${l.timestamp}","${l.action}","${l.bookTitle}","${l.memberName}","${l.fine}"\n`;
+            });
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `library_audit_logs_${Date.now()}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast("CSV export initiated!");
+        }
+
+        // Render Reports Page
+        function renderReports() {
+            const topBooksList = document.getElementById('report-top-books');
+            const topMembersList = document.getElementById('report-top-members');
+
+            // Book Frequency Count
+            const bookCounts = {};
+            logs.forEach(l => {
+                bookCounts[l.bookTitle] = (bookCounts[l.bookTitle] || 0) + 1;
+            });
+            const sortedBooks = Object.entries(bookCounts).sort((a,b) => b[1] - a[1]).slice(0, 5);
+
+            topBooksList.innerHTML = sortedBooks.length === 0 ? '<p class="text-slate-400">No activity logged.</p>' :
+                sortedBooks.map(([title, count]) => `
+                    <div class="flex justify-between items-center pb-1.5 border-b border-slate-100 dark:border-slate-700">
+                        <span class="font-semibold text-slate-800 dark:text-white truncate max-w-[180px]">${escapeHtml(title)}</span>
+                        <span class="font-bold text-sky-600">${count} Loans</span>
+                    </div>
+                `).join('');
+
+            // Member Frequency Count
+            const memberCounts = {};
+            logs.forEach(l => {
+                memberCounts[l.memberName] = (memberCounts[l.memberName] || 0) + 1;
+            });
+            const sortedMembers = Object.entries(memberCounts).sort((a,b) => b[1] - a[1]).slice(0, 5);
+
+            topMembersList.innerHTML = sortedMembers.length === 0 ? '<p class="text-slate-400">No activity logged.</p>' :
+                sortedMembers.map(([name, count]) => `
+                    <div class="flex justify-between items-center pb-1.5 border-b border-slate-100 dark:border-slate-700">
+                        <span class="font-semibold text-slate-800 dark:text-white truncate max-w-[180px]">${escapeHtml(name)}</span>
+                        <span class="font-bold text-emerald-600">${count} Trans</span>
+                    </div>
+                `).join('');
+
+            // Summary Totals
+            document.getElementById('rep-total-titles').textContent = books.length;
+            document.getElementById('rep-total-copies').textContent = books.reduce((acc,b) => acc + Number(b.totalCopies), 0);
+            const totalFines = logs.reduce((acc, l) => acc + (parseFloat(l.fine.replace('$','')) || 0), 0);
+            document.getElementById('rep-fines-collected').textContent = `$${totalFines.toFixed(2)}`;
+        }
+
+        // Settings Save Handler
+        function saveSettings(event) {
+            event.preventDefault();
+            settings.loanPeriodDays = parseInt(document.getElementById('setting-loan-days').value, 10);
+            settings.fineRatePerDay = parseFloat(document.getElementById('setting-fine-rate').value);
+
+            saveToStorage();
+            updateAll();
+            showToast("System configuration updated!");
+        }
+
+        // Global Quick Search Bar Logic
+        function handleGlobalSearch(query) {
+            const resultsDiv = document.getElementById('global-search-results');
+            if (!query || query.trim().length < 2) {
+                resultsDiv.classList.add('hidden');
+                return;
+            }
+
+            const q = query.toLowerCase();
+            const matchedBooks = books.filter(b => b.title.toLowerCase().includes(q) || b.author.toLowerCase().includes(q)).slice(0, 3);
+            const matchedMembers = members.filter(m => m.name.toLowerCase().includes(q) || m.code.toLowerCase().includes(q)).slice(0, 3);
+
+            let html = '';
+            if (matchedBooks.length > 0) {
+                html += `<div class="font-bold text-slate-400 px-2 py-1">BOOKS</div>`;
+                matchedBooks.forEach(b => {
+                    html += `<div onclick="switchTab('catalog'); document.getElementById('catalog-search').value='${escapeHtml(b.title)}'; renderCatalog();" class="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg cursor-pointer flex justify-between">
+                        <span class="font-bold text-slate-800 dark:text-white">${escapeHtml(b.title)}</span>
+                        <span class="text-[10px] text-slate-400">${b.availableCopies} avail</span>
+                    </div>`;
+                });
+            }
+
+            if (matchedMembers.length > 0) {
+                html += `<div class="font-bold text-slate-400 px-2 py-1 mt-1">MEMBERS</div>`;
+                matchedMembers.forEach(m => {
+                    html += `<div onclick="switchTab('members'); document.getElementById('member-search').value='${escapeHtml(m.name)}'; renderMembers();" class="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg cursor-pointer flex justify-between">
+                        <span class="font-bold text-slate-800 dark:text-white">${escapeHtml(m.name)}</span>
+                        <span class="text-[10px] text-sky-500 font-mono">${escapeHtml(m.code)}</span>
+                    </div>`;
+                });
+            }
+
+            if (!html) html = `<div class="p-3 text-slate-400 text-center">No results found</div>`;
+
+            resultsDiv.innerHTML = html;
+            resultsDiv.classList.remove('hidden');
+        }
+
+        // Dark Mode Toggle
+        function toggleDarkMode() {
+            document.documentElement.classList.toggle('dark');
+            const icon = document.getElementById('theme-icon');
+            if (document.documentElement.classList.contains('dark')) {
+                icon.className = 'fa-solid fa-sun text-amber-400';
+            } else {
+                icon.className = 'fa-solid fa-moon';
+            }
+        }
+
+        // Utility: HTML Escaper
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // Toast Display
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+
+            const bgClass = type === 'success' ? 'bg-slate-900 text-white border-l-4 border-sky-500' :
+                            type === 'error' ? 'bg-rose-900 text-white border-l-4 border-rose-500' :
+                            'bg-slate-800 text-slate-200 border-l-4 border-slate-400';
+
+            toast.className = `pointer-events-auto px-4 py-3 rounded-xl shadow-2xl text-xs font-semibold flex items-center justify-between space-x-3 transition-all duration-300 transform translate-y-2 opacity-0 ${bgClass}`;
+            toast.innerHTML = `
+                <div class="flex items-center space-x-2">
+                    <i class="fa-solid ${type === 'success' ? 'fa-circle-check text-sky-400' : type === 'error' ? 'fa-triangle-exclamation text-rose-400' : 'fa-circle-info'}"></i>
+                    <span>${escapeHtml(message)}</span>
+                </div>
+                <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            `;
+
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.remove('translate-y-2', 'opacity-0'), 10);
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
+        // On Load Window Listener
+        window.onload = function() {
+            initApp();
+        };
+    </script>
+</body>
+</html>
